@@ -17,6 +17,9 @@ PQClient::~PQClient()
     if (pgConn) {
         PQfinish(pgConn);
     }
+    if (pgRes) {
+		PQclear(pgRes);
+	}
 }
 
 bool PQClient::Connect()
@@ -36,6 +39,30 @@ int PQClient::ConnectionStatus()
 
 std::string PQClient::ErrorMessage()
 {
-	std::string msg(PQerrorMessage(pgConn));
+	std::string msg("");
+	if (pgConn) {
+		msg.assign(PQerrorMessage(pgConn));
+	}
+	return msg;
+}
+
+bool PQClient::Exec(const std::string &sqlText)
+{
+	bool b = false;
+	if (Connected) {
+		if (pgRes) PQclear(pgRes);
+		pgRes = PQexec(pgConn, sqlText.c_str());
+		auto status = PQresultStatus(pgRes);
+		b = ((status != PGRES_BAD_RESPONSE) && (status != PGRES_NONFATAL_ERROR) && (status != PGRES_FATAL_ERROR));
+	}
+	return b;
+}
+
+std::string PQClient::ResultErrorMessage()
+{
+	std::string msg("");
+	if (pgRes) {
+		msg.assign(PQresultErrorMessage(pgRes));
+	}
 	return msg;
 }

@@ -19,18 +19,23 @@ public:
     PQClient(const std::string &connectionString): pgConn(nullptr) {
         connStr = connectionString;
         Connected = false;
+        pgRes = nullptr;
     };
     PQClient(const ConnectionParam &params): pgConn(nullptr) {
         connStr = PQClient::ParamToString(params);
         Connected = false;
+        pgRes = nullptr;
     };
     bool Connect();
     int ConnectionStatus();
     std::string ErrorMessage();
+    bool Exec(const std::string &sqlText);
+    std::string ResultErrorMessage();
     ~PQClient();
 private:
     bool Connected;
     PGconn *pgConn;
+    PGresult *pgRes;
     std::string connStr;
 };
 
