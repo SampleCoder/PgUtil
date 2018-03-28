@@ -4,22 +4,27 @@
 const std::string q1{ "CREATE DATABASE Dummy_Test;" };
 const std::string q2{ "DROP DATABASE Dummy_Test;" };
 
-int main()
+int main(int argc, char *argv[])
 {
-    PQClient pgClient("host=localhost port=5432 user=postgres dbname=postgres password=123");
-    if (pgClient.Connect()) {
-        bool ok;
-        std::cout << "Connection OK.\n";
-        ok = pgClient.Exec(q1);
-        if (ok) {
-            ok = pgClient.Exec(q2);
+    if (argc > 1) {
+        ConnectionParam connParam{ "localhost", 5432, "postgres", "postgres", argv[1] };
+        PQClient pgClient(connParam);
+        if (pgClient.Connect()) {
+            bool ok;
+            std::cout << "Connection OK.\n";
+            std::cout << "Running " << q1 << std::endl;
+            ok = pgClient.Exec(q1);
+            if (ok) {
+                std::cout << "Running " << q2 << std::endl;
+                ok = pgClient.Exec(q2);
+            }
+            if (!ok) {
+                std::cout << pgClient.ResultErrorMessage();
+            }
         }
-        if (!ok) {
-            std::cout << pgClient.ResultErrorMessage();
-        }
+        else
+            std::cout << "Got error: " << pgClient.ErrorMessage();
     }
-    else
-        std::cout << "Got error: " << pgClient.ErrorMessage();
     return 0;
 }
 
